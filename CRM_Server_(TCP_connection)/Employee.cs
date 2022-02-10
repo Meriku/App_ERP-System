@@ -23,7 +23,7 @@ namespace CRM_Server__TCP_connection_
         }
 
 
-        public static bool EvenOneEmployeeInListExist() // Проверка не пустой ли список сотрудников
+        public static bool IfEvenOneEmployeeInListExist() // Проверка не пустой ли список сотрудников
         {
             if (Employees.Count > 0)
             {
@@ -44,9 +44,28 @@ namespace CRM_Server__TCP_connection_
                 Console.WriteLine($"{i}. {Employees[i].FirstName} {Employees[i].LastName}");
                 i++;
             }
-        }                    
-              
-              
+        }
+
+        public static void PrintListOfEmployeesAndTheirWorkHours()       // Выводим список сотрудников и отработанных часов
+        {
+            Console.WriteLine("\nСписок сотрудников и рабочих часов:\n");
+            int i = 0;
+            while (i < Employees.Count)
+            {
+                double sum = 0;
+                var j = 0;
+
+                while (j < Employees[i].WorkDays.Count)
+                {
+                    sum += Employees[i].WorkDays[j].WorkHoursAtDay();   // Получаем количество рабочих часов этого сотрудника в этот день и суммируем
+                    j++;
+                }
+
+                Console.WriteLine($"{i}. {Employees[i].FirstName} {Employees[i].LastName} всего отработал: \t{sum} часов");
+                i++;
+            }
+        }
+
         public static string GetEmployeeFNameLNameByIndex(int index)    // Имя Фамилия сотрудника по порядковому номеру в списке сотрудников 
         {
             return $"{Employees[index].FirstName} {Employees[index].LastName}";
@@ -73,8 +92,10 @@ namespace CRM_Server__TCP_connection_
             WorkDays.Add(new WorkDay(workdate, hours));
             Console.WriteLine($"Теперь количество часов отработанных сотрудником {FirstName} {LastName} за {workdate.ToString("d")} составляет {hours} рабочих часов ");
         }
-
-
+        public void AddCustomWorkDayForSaveLoad(DateTime workdate, double hours)     // Для загрузки программы с файла
+        {
+            WorkDays.Add(new WorkDay(workdate, hours));
+        }
 
 
         public double GetInfoWorkHoursAtDate(DateTime dateofwork) // Возвращает количество рабочих часов сотрудника в определенную дату
@@ -123,7 +144,7 @@ namespace CRM_Server__TCP_connection_
             Console.WriteLine($"C {firstdate.ToString("d")} по {seconddate.ToString("d")} сотрудник {FirstName} {LastName} отработал {sum} часов");
             return sum;
         }
-        public double GetInfoWorkHoursAllTime()                                             // Возвращает количество рабочих часов сотрудника за все время
+        public double GetInfoWorkHoursAllTime()            // Возвращает количество рабочих часов сотрудника за все время
         {            
             double sum = 0;
             var i = 0;
@@ -159,11 +180,18 @@ namespace CRM_Server__TCP_connection_
                 {
                     Console.WriteLine("Введите Y для продолжение работы или N для выхода из приложения");
                 }
-
             }
-    
         }
 
 
+        public string GetEmployeeDatesAndHours ()       // Возвращает строку для записи в файл
+        {
+            string result = $"#{FirstName} {LastName}\n";
+            foreach (WorkDay workday in WorkDays)
+            {
+                result += $"{workday.WorkDate.ToString("d")}#{workday.WorkHoursAtDay()}\n";
+            }          
+            return result;
+        }
     }
 }

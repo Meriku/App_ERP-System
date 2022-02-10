@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace CRM_Server__TCP_connection_
@@ -15,22 +16,28 @@ namespace CRM_Server__TCP_connection_
             // Добавлять/уменьшать количество отработанных сотрудником часов в определенную дату;
             // Считать и выводить по запросу отработанные часы за дату, период, все время.
             // Нанимать / увольнять сотрудников
-        
-            AddEmployeesFirstTime();            // Создаем сотрудников // TODO: загрузка сотрудников с файла, и запись в файл
+            // Сохранение и загрузка информации из базы данных (набор информации в простом текстовом файле)
 
             Employee TempEmployee;
             DateTime TempDate;
             double TempHours;
-                    
-            while (true)
-            {
-                Console.Clear();
-                UserInterface.FirstGreeting();      // Выводим приветствие
+
+
+            Console.WriteLine("Здравствуйте! Вас приветствует приложение ERM2000v1.0");
+            
+            UserInterface.PrintLoadingAsync();              // Интерфейс загрузки
+            FileReadAndWriteHandler.ToLoadDataBase();       // Загрузка базы данных с файла
            
-                switch (UserInterface.GetUserDecision())
+
+            while (true)
+            {               
+                Console.Clear();
+                UserInterface.FirstGreeting();              // Выводим приветствие
+           
+                switch (UserInterface.GetUserDecision())    // Пользователь выбирает пункт меню   
                 {
                 case 1:
-                        Console.Clear();            // Необходимы: сотрудник, дата
+                        Console.Clear();                    // Необходимы: сотрудник, дата
                         Console.WriteLine("Вы выбрали внести информацию про новый полный рабочий день (8 часов) для сотрудника");   
                         TempEmployee = UserInterface.AskWhichEmployee();
 
@@ -94,10 +101,16 @@ namespace CRM_Server__TCP_connection_
                         }
                         break;
                 case 6:
+                        Console.Clear();            // Необходимо: ничего
+                        Console.WriteLine("Вы выбрали получить информацию про всех сотрудников компании и общее количество отработанных часов");
+                        Employee.PrintListOfEmployeesAndTheirWorkHours();
+                        UserInterface.AskQuitOrContinue();
+                        break;
+                case 7:
                         Console.Clear();            // Необходимы: сначала сотрудник и дата, потом сколько часов
                         Console.WriteLine("Вы выбрали отредактировать информацию о количестве отработанных сотрудником часов в определенную дату"); 
                         TempEmployee = UserInterface.AskWhichEmployee();
-                        if (TempEmployee != null)
+                        if (TempEmployee != null)   
                         {
                             TempDate = UserInterface.AskWhatDate();
                             TempEmployee.GetInfoWorkHoursAtDate(TempDate);
@@ -107,7 +120,7 @@ namespace CRM_Server__TCP_connection_
                             UserInterface.AskQuitOrContinue();
                         }
                         break;
-                case 7:
+                case 8:
                         Console.Clear();            // Необходимы: Сотрудник
                         Console.WriteLine("Вы выбрали уволить сотрудника");
                         TempEmployee = UserInterface.AskWhichEmployee();
@@ -115,40 +128,30 @@ namespace CRM_Server__TCP_connection_
                         if (TempEmployee != null)
                         {
                             TempEmployee.ToFireEmployee();
-                        }                   
+                        }
+                        UserInterface.AskQuitOrContinue();
                         break;
-                case 8:
+                case 9:
                         Console.Clear();            // Необходимы: Имя, Фамилия
                         Console.WriteLine("Вы выбрали нанять сотрудника");                                                                  
-                        string TempFistName = UserInterface.AskFirstNameForNewEmployee();
+                        string TempFirstName = UserInterface.AskFirstNameForNewEmployee();
                         string TempLastName = UserInterface.AskLastNameForNewEmployee();
 
-                        new Employee(TempFistName, TempLastName);
-                        Console.WriteLine($"Вы успешно наняли сотрудника {TempFistName} {TempLastName}");
-                        Console.ReadLine();
+                        new Employee(TempFirstName, TempLastName);
+                        Console.WriteLine($"Вы успешно наняли сотрудника {TempFirstName} {TempLastName}");      
+                        UserInterface.AskQuitOrContinue();
                         break;
-
+                case 10:
+                        Console.Clear();            // Необходимо: ничего
+                        // Сохранить информацию
+                        FileReadAndWriteHandler.ToSaveDataBase();
+                        Environment.Exit(0);
+                        break;
                 }
             }
 
             Console.ReadLine();
 
-        }
-      
-        static void AddEmployeesFirstTime() 
-        {
-            new Employee("Иван", "Иванов");
-            new Employee("Петр", "Петров");
-            new Employee("Олег", "Олегов");
-            new Employee("Степан", "Степанов");
-            new Employee("Николай", "Николаев");
-            new Employee("Анатолий", "Мельник");
-            new Employee("Сергей", "Сергеев");
-        }
-
-    
-
-
-
+        }        
     }
 }

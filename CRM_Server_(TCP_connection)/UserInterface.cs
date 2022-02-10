@@ -16,24 +16,30 @@ namespace CRM_Server__TCP_connection_
             // В таком случае, если необходимо будет масштабировать проект, это можно будет сделать проще
             // Но поскольку это "учебный проект", и я масштабировать его точно не буду выведем меню следующим образом:
 
-            Console.WriteLine("Вас приветствует приложение CRM2000v1.0");
-            Console.WriteLine("\nДля выбора необходимого действия введите цифру: ");
+            
+            Console.WriteLine("Для выбора необходимого действия введите цифру: ");
 
             Console.WriteLine("\n Внести информацию:");
-            Console.WriteLine("\t1 - про новый полный рабочий день (8 часов) для сотрудника");          //AddFullWorkDay
-            Console.WriteLine("\t2 - про новый неполный рабочий день для сотрудника");                  //AddPartWorkDay
+            Console.WriteLine("\t1 - про новый полный рабочий день (8 часов) для сотрудника");              //AddFullWorkDay
+            Console.WriteLine("\t2 - про новый неполный рабочий день для сотрудника");                      //AddPartWorkDay
 
             Console.WriteLine("\n Получить информацию:");
-            Console.WriteLine("\t3 - про количество отработанных сотрудником часов за дату");           //GetInfoWorkHoursPerDate
-            Console.WriteLine("\t4 - про количество отработанных сотрудником часов за период");         //GetInfoWorkHoursPerPeriod
-            Console.WriteLine("\t5 - про количество отработанных сотрудником часов за все время");      //GetInfoWorkHoursAllTime
+            Console.WriteLine("\t3 - про количество отработанных сотрудником часов за дату");               //GetInfoWorkHoursPerDate
+            Console.WriteLine("\t4 - про количество отработанных сотрудником часов за период");             //GetInfoWorkHoursPerPeriod
+            Console.WriteLine("\t5 - про количество отработанных сотрудником часов за все время");          //GetInfoWorkHoursAllTime
+            Console.WriteLine("\t6 - про всех сотрудников компании и общее количество отработанных часов"); //GetInfoWorkHoursAllTime
 
             Console.WriteLine("\n Отредактировать информацию:");
-            Console.WriteLine("\t6 - о количестве отработанных сотрудником часов в определенную дату"); //ChangeWorkHoursAtDate
+            Console.WriteLine("\t7 - о количестве отработанных сотрудником часов в определенную дату");     //ChangeWorkHoursAtDate
 
             Console.WriteLine("\n Уволить или нанять сотрудника:");
-            Console.WriteLine("\t7 - уволить сотрудника");                                              //ToFireEmployee
-            Console.WriteLine("\t8 - нанять сотрудника");                                               //ToHireEmployee
+            Console.WriteLine("\t8 - уволить сотрудника");                                                  //ToFireEmployee
+            Console.WriteLine("\t9 - нанять сотрудника");                                                   //ToHireEmployee
+
+            Console.WriteLine("\n Завершить работу:");
+            Console.WriteLine("\t10 - сохранить информацию про изменения и закрыть программу");             //ToSaveAndExit
+    
+
 
         }
 
@@ -43,13 +49,13 @@ namespace CRM_Server__TCP_connection_
 
             while (true) 
             {
-                if (int.TryParse(Console.ReadLine(), out UserDecision) && UserDecision <= 8 && UserDecision >= 1)
+                if (int.TryParse(Console.ReadLine(), out UserDecision) && UserDecision <= 10 && UserDecision >= 1)
                 {
                     break;
                 }
                 else
                 {
-                    Console.WriteLine("Введите цифру от 1 до 8");
+                    Console.WriteLine("Введите цифру от 1 до 10");
                 }
             }
             return UserDecision;
@@ -104,7 +110,7 @@ namespace CRM_Server__TCP_connection_
 
         public static Employee AskWhichEmployee()       // Выбор интересующего сотрудника для дальнейших действий
         {                       
-            if (Employee.EvenOneEmployeeInListExist())
+            if (Employee.IfEvenOneEmployeeInListExist())
             {
                 Employee.PrintListOfEmployees();
                 Console.WriteLine("\nВведите порядковый номер необходимого сотрудника:");
@@ -177,7 +183,7 @@ namespace CRM_Server__TCP_connection_
                 }
                 else
                 {
-                    Console.WriteLine($"Введите корректное число от 0 до 12)");
+                    Console.WriteLine($"Введите корректное число от 0 до 12");
                 }
             }
 
@@ -221,6 +227,7 @@ namespace CRM_Server__TCP_connection_
                 }
                 else if (string.Equals(answer, "n"))
                 {
+                    FileReadAndWriteHandler.ToSaveDataBase();
                     Environment.Exit(0);
                     break;
                 }
@@ -264,6 +271,55 @@ namespace CRM_Server__TCP_connection_
 
         }
 
- 
+
+        public static async Task PrintLoadingAsync()
+        {
+            Console.Write("\nИдет загрузка базы данных");
+            Console.CursorVisible = false;
+
+            await Task.Run(() => PrintLoading());
+
+            Console.CursorVisible = true;
+           
+        }
+
+        public static void PrintLoading()
+        {
+            while (FileReadAndWriteHandler.isReading)
+            {
+                if (FileReadAndWriteHandler.isReading) 
+                {
+                    Console.SetCursorPosition(25, 2);
+                    Console.Write("\t");
+                    Task.Delay(400).Wait();
+                }
+                if (FileReadAndWriteHandler.isReading)
+                {
+                    Console.SetCursorPosition(25, 2);
+                    Console.Write(".\t");
+                    Task.Delay(400).Wait();
+                }
+                if (FileReadAndWriteHandler.isReading)
+                {
+                    Console.SetCursorPosition(25, 2);
+                    Console.Write("..\t");
+                    Task.Delay(400).Wait();
+                }
+                if (FileReadAndWriteHandler.isReading)
+                {
+                    Console.SetCursorPosition(25, 2);
+                    Console.Write("...\t");
+                    Task.Delay(400).Wait();
+                }
+            
+            }
+        }
+
+
+
+
+
+
+
     }
 }
