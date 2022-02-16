@@ -9,7 +9,7 @@ namespace CRM_Server__TCP_connection_
 
     internal class WorkDay
     {
-        private double WorkHours { get; }
+        private double WorkHours;
         public DateTime WorkDate;
 
         public WorkDay (DateTime workdate, double workhours)
@@ -21,6 +21,12 @@ namespace CRM_Server__TCP_connection_
         public double WorkHoursAtDay ()
         {
             return WorkHours;
+
+        }
+
+        public void EditWorkHoursAtDay(double hours)
+        {
+            WorkHours = hours;
 
         }
 

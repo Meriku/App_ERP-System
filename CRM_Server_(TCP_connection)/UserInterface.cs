@@ -8,40 +8,67 @@ namespace CRM_Server__TCP_connection_
 {
     public static class UserInterface
     {
-
-        public static void FirstGreeting()
+        public static void ClearClientConsole(ClientObject client)       // Выводим список сотрудников
         {
-            // Возможно создать List строк "PossibleDecisions", и внести туда возможные варианты ответа
-            // Эти варианты вывести с помощью цикла на консоль, и ограничить возможные варианты ответа длинной списка (от 1 до List.Count)
-            // В таком случае, если необходимо будет масштабировать проект, это можно будет сделать проще
-            // Но поскольку это "учебный проект", и я масштабировать его точно не буду выведем меню следующим образом:
 
-            
-            Console.WriteLine("Для выбора необходимого действия введите цифру: ");
-
-            Console.WriteLine("\n Внести информацию:");
-            Console.WriteLine("\t1 - про новый полный рабочий день (8 часов) для сотрудника");              //AddFullWorkDay
-            Console.WriteLine("\t2 - про новый неполный рабочий день для сотрудника");                      //AddPartWorkDay
-
-            Console.WriteLine("\n Получить информацию:");
-            Console.WriteLine("\t3 - про количество отработанных сотрудником часов за дату");               //GetInfoWorkHoursPerDate
-            Console.WriteLine("\t4 - про количество отработанных сотрудником часов за период");             //GetInfoWorkHoursPerPeriod
-            Console.WriteLine("\t5 - про количество отработанных сотрудником часов за все время");          //GetInfoWorkHoursAllTime
-            Console.WriteLine("\t6 - про всех сотрудников компании и общее количество отработанных часов"); //GetInfoWorkHoursAllTime
-
-            Console.WriteLine("\n Отредактировать информацию:");
-            Console.WriteLine("\t7 - о количестве отработанных сотрудником часов в определенную дату");     //ChangeWorkHoursAtDate
-
-            Console.WriteLine("\n Уволить или нанять сотрудника:");
-            Console.WriteLine("\t8 - уволить сотрудника");                                                  //ToFireEmployee
-            Console.WriteLine("\t9 - нанять сотрудника");                                                   //ToHireEmployee
-
-            Console.WriteLine("\n Завершить работу:");
-            Console.WriteLine("\t10 - сохранить информацию про изменения и закрыть программу");             //ToSaveAndExit
-    
-
+            ServerObject.SendMessage("#", client);
 
         }
+
+        public static void PrintMainMenu(ClientObject client)
+        {
+            ServerObject.SendMessage("\nДля выбора необходимого действия введите цифру: " +
+                                                 "\n\n Внести информацию:" +
+                                                 "\n\t1 - про новый полный рабочий день (8 часов) для сотрудника" +
+                                                 "\n\t2 - про новый неполный рабочий день для сотрудника" +
+                                                 "\n\n Получить информацию:" +
+                                                 "\n\t3 - про количество отработанных сотрудником часов за дату" +
+                                                 "\n\t4 - про количество отработанных сотрудником часов за период" +
+                                                 "\n\t5 - про количество отработанных сотрудником часов за все время" +
+                                                 "\n\t6 - про всех сотрудников компании и общее количество отработанных часов" +
+                                                 "\n\n Отредактировать информацию:" +
+                                                 "\n\t7 - о количестве отработанных сотрудником часов в определенную дату" +
+                                                 "\n\n Уволить или нанять сотрудника:" +
+                                                 "\n\t8 - уволить сотрудника" +
+                                                 "\n\t9 - нанять сотрудника" +
+                                                 "\n\n Завершить работу:" +
+                                                 "\n\t10 - сохранить информацию про изменения и закрыть программу", client);
+        }
+
+
+
+        public static void PrintListOfEmployees(ClientObject client)       // Выводим список сотрудников
+        {      
+        
+            ServerObject.SendMessage("\nСписок сотрудников:" + Employee.GetListOfEmployees(), client);
+                 
+        }
+
+        public static void AskWhichEmployee(ClientObject client)       // Выбор интересующего сотрудника для дальнейших действий
+        {
+
+            ServerObject.SendMessage("\n\nВведите порядковый номер необходимого сотрудника:", client);
+
+        }
+
+        public static void AskWhatDate(ClientObject client)            // Выбор интересующей даты для дальнейших действий
+        {
+            
+            ServerObject.SendMessage("\nВведите дату рабочего дня выбранного сотрудника в формате: 00.00.0000", client);
+
+        }
+
+        public static void AskQuitOrContinue(ClientObject client)          // Продолжить работу или выйти с приложения
+        {
+            ServerObject.SendMessage("\nПродолжить работу с системой? Y or N ", client);
+      
+        }
+
+
+
+
+
+
 
         public static int GetUserDecision()  
         {
@@ -56,6 +83,7 @@ namespace CRM_Server__TCP_connection_
                 else
                 {
                     Console.WriteLine("Введите цифру от 1 до 10");
+                   
                 }
             }
             return UserDecision;
@@ -108,65 +136,11 @@ namespace CRM_Server__TCP_connection_
 
 
 
-        public static Employee AskWhichEmployee()       // Выбор интересующего сотрудника для дальнейших действий
-        {                       
-            if (Employee.IfEvenOneEmployeeInListExist())
-            {
-                Employee.PrintListOfEmployees();
-                Console.WriteLine("\nВведите порядковый номер необходимого сотрудника:");
+        
 
-                int result;
+ 
 
-                while (true)                            // Проверка на корректность введенной информации
-                {
-                    if (int.TryParse(Console.ReadLine(), out result) && result >= 0 && result < Employee.GetNumberOfEmployees())
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        Console.WriteLine($"Введите цифру от 0 до {Employee.GetNumberOfEmployees() - 1}");
-                    }
-                }
 
-                Console.Clear();
-                Console.WriteLine($"Вы выбрали сотрудника {Employee.GetEmployeeFNameLNameByIndex(result)}");
-
-                return Employee.GetEmployeeByIndex(result);
-            }
-            else
-            {
-                Console.WriteLine("Список сотрудников пуст. Наймите хотя бы одного человека для работы.");
-                Console.ReadLine();
-                return null;
-            }
-
-        }
-
-    
-        public static DateTime AskWhatDate()            // Выбор интересующей даты для дальнейших действий
-        {
-            Console.Clear();
-            Console.WriteLine("Введите дату рабочего дня выбранного сотрудника в формате: 00.00.0000");
-
-            DateTime result;
-
-            while (true)                                // Проверка на корректность введенной информации
-            {
-                if (DateTime.TryParse(Console.ReadLine(), out result) && result.Year >= 2000 && result <= DateTime.Now)
-                {
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine($"Введите корректную дату в формате: 00.00.0000");
-                }
-            }
-
-            Console.Clear();
-            return result;
-
-        }
 
         public static double AskWorkHoursCount()        // Запрос к пользователю на количество часов 
         {
@@ -186,10 +160,10 @@ namespace CRM_Server__TCP_connection_
                     Console.WriteLine($"Введите корректное число от 0 до 12");
                 }
             }
-
             return result;
-
         }
+
+
 
         public static double AskWorkHoursToEditInfo()   // Запрос к пользователю на количество часов  (для редактирования информации)
         {
@@ -214,30 +188,9 @@ namespace CRM_Server__TCP_connection_
 
         }
 
-        public static void AskQuitOrContinue()          // Продолжить работу или выйти с приложения
-        {
-            Console.WriteLine("\nПродолжить работу с системой? Y or N ");
-            while (true)
-            {
-                var answer = Console.ReadLine().ToLower();
-                if (string.Equals(answer, "y"))
-                {
-                    Console.WriteLine("Продолжаем работу");
-                    break;
-                }
-                else if (string.Equals(answer, "n"))
-                {
-                    FileReadAndWriteHandler.ToSaveDataBase();
-                    Environment.Exit(0);
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine("Введите Y для продолжение работы или N для выхода из приложения");
-                }
 
-            }      
-        }
+
+  
 
 
         public static DateTime AskWhatDateForPeriod(int firstorseconddate)  // Запрос на Первую (1) и Вторую (2) дату для периода
@@ -265,60 +218,51 @@ namespace CRM_Server__TCP_connection_
                     Console.WriteLine($"Введите корректную дату в формате: 00.00.0000");
                 }                
             }
-
             Console.Clear();
             return result;
-
         }
 
-
-        public static async Task PrintLoadingAsync()
-        {
-            Console.Write("\nИдет загрузка базы данных");
-            Console.CursorVisible = false;
-
-            await Task.Run(() => PrintLoading());
-
-            Console.CursorVisible = true;
-           
-        }
-
-        public static void PrintLoading()
-        {
-            while (FileReadAndWriteHandler.isReading)
+        public static void PrintInfoWorkHoursAtDate(DateTime workday, double hours)
+        {         
+            if (hours == 0)
             {
-                if (FileReadAndWriteHandler.isReading) 
-                {
-                    Console.SetCursorPosition(25, 2);
-                    Console.Write("\t");
-                    Task.Delay(400).Wait();
-                }
-                if (FileReadAndWriteHandler.isReading)
-                {
-                    Console.SetCursorPosition(25, 2);
-                    Console.Write(".\t");
-                    Task.Delay(400).Wait();
-                }
-                if (FileReadAndWriteHandler.isReading)
-                {
-                    Console.SetCursorPosition(25, 2);
-                    Console.Write("..\t");
-                    Task.Delay(400).Wait();
-                }
-                if (FileReadAndWriteHandler.isReading)
-                {
-                    Console.SetCursorPosition(25, 2);
-                    Console.Write("...\t");
-                    Task.Delay(400).Wait();
-                }
-            
+            Console.WriteLine($"Данный сотрудник не был на работе {workday.ToString("d")}");
+            }
+            else
+            {
+                Console.WriteLine($"Данный сотрудник отработал {hours} часов {workday.ToString("d")}");
             }
         }
 
 
+        #region LoadingInteface
 
+        //public static async Task PrintLoadingAsync()
+        //{
+        //    Console.Write("\nИдет загрузка базы данных");
+        //    Console.CursorVisible = false;
 
+        //    await Task.Run(() => PrintLoading());
 
+        //    Console.CursorVisible = true;           
+        //}
+
+        //public static void PrintLoading()
+        //{
+        //    while (FileReadAndWriteHandler.isReading)
+        //    { 
+        //        for (int i = 0; i <= 3; i++)
+        //        {
+        //            if (FileReadAndWriteHandler.isReading)
+        //            {
+        //                Console.SetCursorPosition(25, 2);
+        //                Console.Write(new StringBuilder().Insert(0, ".", i)+"\t");
+        //                Task.Delay(400).Wait();
+        //            }               
+        //        }
+        //    }
+        //}
+        #endregion
 
 
     }

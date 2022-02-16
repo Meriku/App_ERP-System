@@ -11,10 +11,11 @@ namespace CRM_Server__TCP_connection_
     internal class FileReadAndWriteHandler
     {
         public static bool isReading = true;
-
         public static void ToLoadDataBase()
         {
             isReading = true;
+
+            // TODO: запись не только информации в DataBase, но и ведение логов (истории изменений) и их сохранение
 
             string result;
             string FirstName;
@@ -49,13 +50,13 @@ namespace CRM_Server__TCP_connection_
 
                     }
                 }             
-                Thread.Sleep(5000);
+                Thread.Sleep(500);
                 isReading = false;
             }           
         }
    
         
-        public static void ToSaveDataBase()
+        public static void ToSaveDataBase()     // TODO: перенести метод в Employee, изменить Employees List с public в private
         {
             string result = "";
 
