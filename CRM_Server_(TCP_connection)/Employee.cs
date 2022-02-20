@@ -21,7 +21,12 @@ namespace CRM_Server__TCP_connection_
             LastName = lastname;
             Employees.Add(this);
         }
-
+        public Employee(ClientObject client)
+        {
+            FirstName = (string)client.ClientAnswers[1];
+            LastName = (string)client.ClientAnswers[2];           
+            Employees.Add(this);
+        }
 
         public static bool IfEvenOneEmployeeInListExist() // Проверка не пустой ли список сотрудников
         {
@@ -49,29 +54,11 @@ namespace CRM_Server__TCP_connection_
             return result;
         }
 
-        public static void PrintListOfEmployeesAndTheirWorkHours()       // Выводим список сотрудников и отработанных часов
+
+        public static string GetEmployeeName(object empObj)    // Имя Фамилия сотрудника 
         {
-            Console.WriteLine("\nСписок сотрудников и рабочих часов:\n");
-            int i = 0;
-            while (i < Employees.Count)
-            {
-                double sum = 0;
-                var j = 0;
-
-                while (j < Employees[i].WorkDays.Count)
-                {
-                    sum += Employees[i].WorkDays[j].WorkHoursAtDay();   // Получаем количество рабочих часов этого сотрудника в этот день и суммируем
-                    j++;
-                }
-
-                Console.WriteLine($"{i}. {Employees[i].FirstName} {Employees[i].LastName} всего отработал: \t{sum} часов");
-                i++;
-            }
-        }
-
-        public static string GetEmployeeNameByIndex(int index)    // Имя Фамилия сотрудника по порядковому номеру в списке сотрудников 
-        {
-            return $"{Employees[index].FirstName} {Employees[index].LastName}";
+            var emp = (Employee)empObj;
+            return $"{emp.FirstName} {emp.LastName}";
         }
 
         public static int GetNumberOfEmployees()                // Возвращает количество сотрудников
@@ -84,42 +71,141 @@ namespace CRM_Server__TCP_connection_
             return Employees[index];
         }
 
-        public static string AddFullWorkDay(Employee emp, DateTime workdate)  // Добавляем новый полный рабочий день                   
+        public static string AddFullWorkDay(ClientObject client)  // Добавляем новый полный рабочий день                   
         {
+            var emp = (Employee)client.ClientAnswers[1];
+            var workdate = (DateTime)client.ClientAnswers[2];
+
             string result = "";
 
-            if (GetInfoWorkHoursAtDate(emp, workdate) == 0)
+            if (GetInfoWorkHoursAtDate(client) == 0)
             {
                 emp.WorkDays.Add(new WorkDay(workdate, 8.0));
                 result += $"\nТеперь количество часов отработанных сотрудником {emp.FirstName} {emp.LastName} за {workdate.ToString("d")} составляет 8 рабочих часов ";
             }
             else                                                // Если рабочий день уже существует 
             {
-                result += $"\nУказано что {emp.FirstName} {emp.LastName} за {workdate.ToString("d")} отработал {GetInfoWorkHoursAtDate(emp, workdate)} рабочих часов\nДля внесение изменений в существующие данные воспользуйтесь пунктом 7 'Отредактировать информацию'";
+                result += $"\nУказано что {emp.FirstName} {emp.LastName} за {workdate.ToString("d")} отработал {GetInfoWorkHoursAtDate(client)} рабочих часов\nДля внесение изменений в существующие данные воспользуйтесь пунктом 7 'Отредактировать информацию'";
             }
 
             return result;
         }
 
-        public static void AddPartWorkDay(Employee emp, DateTime workdate, double hours)    
+        public static string AddPartWorkDay(ClientObject client)    
         {
-            if (GetInfoWorkHoursAtDate(emp, workdate) == 0)          // Добавляем новый неполный рабочий день
+            var emp = (Employee)client.ClientAnswers[1]; 
+            var workdate = (DateTime)client.ClientAnswers[2];
+            var hours = (double)client.ClientAnswers[3];
+
+
+            string result = "";
+
+            if (GetInfoWorkHoursAtDate(client) == 0)          // Добавляем новый неполный рабочий день
             {
                 emp.WorkDays.Add(new WorkDay(workdate, hours));
-                Console.WriteLine($"Теперь количество часов отработанных сотрудником {emp.FirstName} {emp.LastName} за {workdate.ToString("d")} составляет {hours} рабочих часов ");
+                result += $"\nТеперь количество часов отработанных сотрудником {emp.FirstName} {emp.LastName} за {workdate.ToString("d")} составляет {hours} рабочих часов ";               
             }
             else                                                // Если рабочий день уже существует 
             {
-                Console.WriteLine($"Указано что {emp.FirstName} {emp.LastName} за {workdate.ToString("d")} отработал {GetInfoWorkHoursAtDate(emp, workdate)} рабочих часов");
-                Console.WriteLine($"Для внесение изменений в существующие данные воспользуйтесь пунктом 7 'Отредактировать информацию'");
+                result += $"\nУказано что {emp.FirstName} {emp.LastName} за {workdate.ToString("d")} отработал {GetInfoWorkHoursAtDate(client)} рабочих часов\nДля внесение изменений в существующие данные воспользуйтесь пунктом 7 'Отредактировать информацию'";
             }
+
+            return result;
         }
 
-        public static void EditInfoAboutWorkDay(Employee emp, DateTime workdate, double hours)
+
+        public static double GetInfoWorkHoursAtDate(ClientObject client) // Возвращает количество рабочих часов сотрудника в определенную дату
         {
+            var emp = (Employee)client.ClientAnswers[1];
+            var workdate = (DateTime)client.ClientAnswers[2];
+
+            double hours = 0;
+            var i = 0;
+
+            while (i < emp.WorkDays.Count)                      // Находим в списке рабочих дней необходимый
+            {
+                if (emp.WorkDays[i].WorkDate.Equals(workdate))
+                {
+                    hours = emp.WorkDays[i].WorkHoursAtDay();
+                    break;
+                }
+                i++;
+            }
+
+            return hours;
+        }
+
+        public static string GetInfoWorkHoursPerPeriod(ClientObject client)    // Возвращает количество рабочих часов сотрудника за период
+        {
+            var emp = (Employee)client.ClientAnswers[1];
+            var firstdate = (DateTime)client.ClientAnswers[2];
+            var seconddate = (DateTime)client.ClientAnswers[3];
+
+            double sum = 0;
+            var i = 0;
+
+            while (i < emp.WorkDays.Count)
+            {
+                if (emp.WorkDays[i].WorkDate >= firstdate && emp.WorkDays[i].WorkDate <= seconddate)
+                {
+                    sum += emp.WorkDays[i].WorkHoursAtDay();   // Получаем количество рабочих часов этого сотрудника в этот день и суммируем
+                }
+                i++;
+            }
+           
+            return $"C {firstdate.ToString("d")} по {seconddate.ToString("d")} сотрудник {emp.FirstName} {emp.LastName} отработал {sum} часов";
+        }
+
+        public static string GetInfoWorkHoursAllTime(ClientObject client)            // Возвращает количество рабочих часов сотрудника за все время
+        {
+            var emp = (Employee)client.ClientAnswers[1];
+
+            double sum = 0;
+            var i = 0;
+
+            while (i < emp.WorkDays.Count)
+            {
+                sum += emp.WorkDays[i].WorkHoursAtDay();   // Получаем количество рабочих часов этого сотрудника в этот день и суммируем
+                i++;
+            }
+
+            return $"\nВсего сотрудник {emp.FirstName} {emp.LastName} отработал {sum} часов";
+        }
+
+
+        public static string GetListOfEmployeesAndWorkHours()       // Выводим список сотрудников и отработанных часов
+        {
+            string result = "\nСписок сотрудников и рабочих часов:\n\n";
+
+            int i = 0;
+            while (i < Employees.Count)
+            {
+                double sum = 0;
+                var j = 0;
+
+                while (j < Employees[i].WorkDays.Count)
+                {
+                    sum += Employees[i].WorkDays[j].WorkHoursAtDay();   // Получаем количество рабочих часов этого сотрудника в этот день и суммируем
+                    j++;
+                }
+
+                result += $"{i}. {Employees[i].FirstName} {Employees[i].LastName} всего отработал: \t{sum} часов\n";
+                i++;
+            }
+
+            return result;
+        }
+
+
+        public static string EditInfoAboutWorkDay(ClientObject client)
+        {
+            Employee emp = (Employee)client.ClientAnswers[1];
+            DateTime workdate = (DateTime)client.ClientAnswers[2];
+            double hours = (double)client.ClientAnswers[3];
+
             int i = 0;
 
-            if (GetInfoWorkHoursAtDate(emp, workdate) > 0)              // Если такой рабочий день уже есть
+            if (GetInfoWorkHoursAtDate(client) > 0)              // Если такой рабочий день уже есть
             {
                 while (i < emp.WorkDays.Count)
                 {
@@ -137,7 +223,7 @@ namespace CRM_Server__TCP_connection_
             }
 
 
-            Console.WriteLine($"Информация отредактирована. {emp.FirstName} {emp.LastName} за {workdate.ToString("d")} отработал {GetInfoWorkHoursAtDate(emp, workdate)} рабочих часов");
+            return $"Информация отредактирована. Зафиксировано что {emp.FirstName} {emp.LastName} за {workdate.ToString("d")} отработал {GetInfoWorkHoursAtDate(client)} рабочих часов";
 
         }
 
@@ -146,81 +232,30 @@ namespace CRM_Server__TCP_connection_
         {
             WorkDays.Add(new WorkDay(workdate, hours));
         }
-
-
-        public static double GetInfoWorkHoursAtDate(Employee emp, DateTime dateofwork) // Возвращает количество рабочих часов сотрудника в определенную дату
-        {
-            double hours = 0;
-            var i = 0;
          
-                while (i < emp.WorkDays.Count)                      // Находим в списке рабочих дней необходимый
-                {
-                    if (emp.WorkDays[i].WorkDate.Equals(dateofwork))    
-                    {
-                        hours = emp.WorkDays[i].WorkHoursAtDay();                      
-                        break;
-                    }               
-                    i++;
-                }          
-                
-            return hours;
-        }
-
-        
-        public double GetInfoWorkHoursPerPeriod(DateTime firstdate, DateTime seconddate)    // Возвращает количество рабочих часов сотрудника за период
+        public static string ToFireEmployee(ClientObject client)                // Уволить сотрудника (удалить из списка)
         {
-            double sum = 0;
-            var i = 0;
+            var emp = (Employee)client.ClientAnswers[1];
+            var IsSure = (string)client.ClientAnswers[2];
 
-            while (i < WorkDays.Count)
+            if (IsSure.Equals("y"))
             {
-                if (WorkDays[i].WorkDate >= firstdate && WorkDays[i].WorkDate <= seconddate)
-                {
-                    sum += WorkDays[i].WorkHoursAtDay();   // Получаем количество рабочих часов этого сотрудника в этот день и суммируем
-                }               
-                i++;
+                Employees.Remove(emp);
+                Console.WriteLine($"Пользователь {client.userName} уволил {emp.FirstName} {emp.LastName}");
+                return $"Сотрудник {emp.FirstName} {emp.LastName} уволен";
             }
-
-            Console.WriteLine($"C {firstdate.ToString("d")} по {seconddate.ToString("d")} сотрудник {FirstName} {LastName} отработал {sum} часов");
-            return sum;
-        }
-        public double GetInfoWorkHoursAllTime()            // Возвращает количество рабочих часов сотрудника за все время
-        {            
-            double sum = 0;
-            var i = 0;
-
-            while (i < WorkDays.Count)
+            else if (IsSure.Equals("n"))
             {
-                sum += WorkDays[i].WorkHoursAtDay();   // Получаем количество рабочих часов этого сотрудника в этот день и суммируем
-                i++;
-            }
-
-            Console.WriteLine($"Всего сотрудник {FirstName} {LastName} отработал {sum} часов");
-            return sum;           
-        }
-
-        public void ToFireEmployee()                // Уволить сотрудника (удалить из списка)
-        {
-            Console.Clear();
-            Console.WriteLine($"Вы действительно хотите уволить сотрудника {FirstName} {LastName}? Y or N ");
-            while (true)
+                Console.WriteLine($"Пользователь {client.userName} отменил процедуру увольнения {emp.FirstName} {emp.LastName}");
+                return $"Сотрудник {emp.FirstName} {emp.LastName} не уволен. Процедура отменена.";
+            }    
+            else
             {
-                var answer = Console.ReadLine().ToLower();
-                if (string.Equals(answer, "y"))
-                {
-                    Console.WriteLine($"Сотрудник {FirstName} {LastName} уволен");
-                    Employees.Remove(this);
-                    break;
-                }
-                else if (string.Equals(answer, "n"))
-                {
-                    break;
-                }
-                else
-                {
-                    Console.WriteLine("Введите Y что бы уволить сотрудника или N если хотите отменить увольнение");
-                }
+                return "Введите Y что бы уволить сотрудника, или N что бы отменить процедуру.";
             }
+            
+
+
         }
 
 

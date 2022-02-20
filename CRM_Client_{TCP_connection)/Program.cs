@@ -53,6 +53,7 @@ namespace CRM_Client__TCP_connection_
         {
             while (true)
             {
+                
                 string message = Console.ReadLine();
                 byte[] data = Encoding.UTF8.GetBytes(message);
                 stream.Write(data, 0, data.Length);
@@ -78,20 +79,18 @@ namespace CRM_Client__TCP_connection_
 
                     string message = builder.ToString();
 
-                    if (message[0].Equals('#')) // TODO: Создать отдельный класс
+                    if (CheckIfMessageIsCommand.IfCommandClearConsole(message))
                     {
-                        Console.Clear();
                         message = message.Substring(1);
                     }
-
-                    if (message[0].Equals('%')) // TODO: Создать отдельный класс
+                    if (CheckIfMessageIsCommand.IfCommandDisconnect(message))
                     {
-                        Console.WriteLine("\nВы отключены от сервера.");
-                        Console.ReadLine();
                         Disconnect();
                     }
 
-                    Console.WriteLine(message); // Вывод сообщения
+
+                    Console.Write(message); // Вывод сообщения
+                    Console.WriteLine();
                 }
                 catch
                 {
