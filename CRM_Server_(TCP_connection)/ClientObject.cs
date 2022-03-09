@@ -65,8 +65,7 @@ namespace CRM_Server__TCP_connection_
 
                 UserInterface.PrintMainMenu(this);                                          // Отправляем первое приветствие (меню)
 
-                Console.WriteLine($"{userName} подключился к системе в {DateTime.Now:HH:mm:ss}");
-
+                FileReadAndWriteHandler.ToAddLogs($"{userName} подключился к системе в {DateTime.Now:HH:mm:ss}");
 
                 while (true) // В бесконечном цикле получаем сообщения от клиента
                 {
@@ -79,7 +78,7 @@ namespace CRM_Server__TCP_connection_
                     }
                     catch
                     {
-                        Console.WriteLine($"Пользователь {userName} вышел из системы в {DateTime.Now:HH:mm:ss}");
+                        FileReadAndWriteHandler.ToAddLogs($"Пользователь {userName} вышел из системы в {DateTime.Now:HH:mm:ss}");
                         break;
                     }
                 }

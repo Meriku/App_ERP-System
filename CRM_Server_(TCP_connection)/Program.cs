@@ -26,6 +26,7 @@ namespace CRM_Server__TCP_connection_
 
 
             FileReadAndWriteHandler.ToLoadDataBase();       // Загрузка базы данных с файла
+            FileReadAndWriteHandler.ToAddLogs($"\nСервер запущен: {DateTime.Now}");
 
             try
             {
@@ -36,6 +37,7 @@ namespace CRM_Server__TCP_connection_
             catch (Exception ex)
             {
                 server.Disconnect();
+                FileReadAndWriteHandler.ToAddLogs($"Сервер закрыт с ошибкой: {DateTime.Now} | {ex.Message}");
                 Console.WriteLine(ex.Message);
             }                   
         }

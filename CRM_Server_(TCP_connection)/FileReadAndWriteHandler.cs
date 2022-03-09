@@ -15,8 +15,6 @@ namespace CRM_Server__TCP_connection_
         {
             isReading = true;
 
-            // TODO: запись не только информации в DataBase, но и ведение логов (истории изменений) и их сохранение
-
             string result;
             string FirstName;
             string LastName;
@@ -56,24 +54,29 @@ namespace CRM_Server__TCP_connection_
         }
    
         
-        public static void ToSaveDataBase()     // TODO: перенести метод в Employee, изменить Employees List с public в private
+        public static void ToSaveDataBase()  
         {
-            string result = "";
-
-            foreach (Employee emp in Employee.Employees)
-            {
-                result += emp.GetEmployeeDatesAndHours();
-            }
-
-            //      "#Имя Фамилия"
-            //      "10.02.2020#6"
-            //      "11.02.2020#8"
-            //      "#Имя Фамилия"
-
+            string result = Employee.GetEmployeeDatesAndHours();
+               
             using (var DataBase = new StreamWriter("DataBase.txt", append: false, Encoding.UTF8))
             {           
                 DataBase.Write(result);
             }
         }
+
+        public static void ToAddLogs(string log)     
+        {
+            using (var logs = new StreamWriter("logs.txt", append: true, Encoding.UTF8))
+            {
+                logs.WriteLine(log);
+                Console.WriteLine(log);
+            }
+        }
+
+
+
+
+
+
     }
 }

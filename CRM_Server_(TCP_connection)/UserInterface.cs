@@ -45,7 +45,7 @@ namespace CRM_Server__TCP_connection_
         }
         public static void PrintInfoAboutNewEmployee(ClientObject client)       // Информируем про успешный найм нового сотрудника
         {
-            Console.WriteLine($"Пользователь {client.userName} добавил нового сотрудника: {(string)client.ClientAnswers[1]} {(string)client.ClientAnswers[2]}");
+            FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} добавил нового сотрудника: {(string)client.ClientAnswers[1]} {(string)client.ClientAnswers[2]}");
             ServerObject.SendMessage($"Вы успешно добавили нового сотрудника: {(string)client.ClientAnswers[1]} {(string)client.ClientAnswers[2]}", client);
         }
 

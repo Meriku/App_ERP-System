@@ -19,12 +19,12 @@ namespace CRM_Server__TCP_connection_
                     if (client.ClientAnswers.Count == 0)
                     {
                         client.AddAnswer(result);
-                        Console.WriteLine($"{client.userName} сделал выбор в Главном Меню: '{GetTitleOfMenuItem(client)}'.");
+                        FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал выбор в Главном Меню: '{GetTitleOfMenuItem(client)}'.");
                     }
                     else
                     {
                         client.AddAnswer(result);
-                        Console.WriteLine($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({message}).");
+                       FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({message}).");
                     }
                                                                     
                     ChooseMenuItem(client);
@@ -32,7 +32,7 @@ namespace CRM_Server__TCP_connection_
                 }
                 else
                 {
-                    Console.WriteLine($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо целого числа.");
+                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо целого числа.");
                     ServerObject.SendMessage($"Некорректный выбор. Введите целое число", client);
                 }
             }
@@ -40,13 +40,13 @@ namespace CRM_Server__TCP_connection_
             {
                 if (double.TryParse(message, out var result) && result >= 0 && result <= 12)
                 {
-                    Console.WriteLine($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({message}) часов.");
+                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({message}) часов.");
                     client.AddAnswer(result);
                     ChooseMenuItem(client);
                 }
                 else
                 {
-                    Console.WriteLine($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо числа отработанных часов.");
+                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо числа отработанных часов.");
                     ServerObject.SendMessage($"Некорректный выбор. Введите число отработанных часов", client);
                 }
             }
@@ -54,13 +54,13 @@ namespace CRM_Server__TCP_connection_
             {
                 if (int.TryParse(message, out var result) && result >= 0 && result <= Employee.GetNumberOfEmployees() - 1)
                 {
-                    Console.WriteLine($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({Employee.GetEmployeeName(Employee.GetEmployeeByIndex(result))}).");
+                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({Employee.GetEmployeeName(Employee.GetEmployeeByIndex(result))}).");
                     client.AddAnswer(Employee.GetEmployeeByIndex(result));
                     ChooseMenuItem(client);
                 }
                 else
                 {
-                    Console.WriteLine($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо порядкового номера сотрудника.");
+                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо порядкового номера сотрудника.");
                     ServerObject.SendMessage($"Некорректный выбор. Введите порядковый номер сотрудника.", client);
                 }
             }
@@ -69,13 +69,13 @@ namespace CRM_Server__TCP_connection_
             {
                 if (DateTime.TryParse(message, out var result) && result >= DateTime.Parse("01.01.2010") && result <= DateTime.Now)
                 {
-                    Console.WriteLine($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({result:d}).");
+                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({result:d}).");
                     client.AddAnswer(result);
                     ChooseMenuItem(client);
                 }
                 else
                 {
-                    Console.WriteLine($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо корректной даты.");
+                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо корректной даты.");
                     ServerObject.SendMessage($"Некорректный выбор. Введите дату с 01.01.2010 по {DateTime.Now:d}", client);
                 }
             }
@@ -88,7 +88,7 @@ namespace CRM_Server__TCP_connection_
                     UserInterface.PrintMainMenu(client);        // Выводим главное меню
                     client.ExpectedAnswer[0] = typeof(int);     // Ожидаем от пользователя выбор пункта главного меню
                     client.ExpectedAnswer[1] = 10;
-                    Console.WriteLine($"{client.userName} вернулся в основное меню.");
+                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} вернулся в основное меню в {DateTime.Now}");
                 }
                 else if (string.Equals(message.ToLower(), "n"))     // Завершить работу с системой
                 {
@@ -149,7 +149,7 @@ namespace CRM_Server__TCP_connection_
                             break;
 
                         case 3:
-                            var result = Employee.AddFullWorkDay(client); // TODO: сделать так красиво везде
+                            var result = Employee.AddFullWorkDay(client);
                             ServerObject.SendMessage(result, client);
 
                             UserInterface.AskQuitOrContinue(client);
@@ -198,7 +198,7 @@ namespace CRM_Server__TCP_connection_
                             break; 
                             
                         case 3:                          
-                            string result = $"\nСотрудник {Employee.GetEmployeeName(client.ClientAnswers[1])} отработал за {client.ClientAnswers[2]:d} {Employee.GetInfoWorkHoursAtDate(client)} часов.";
+                            string result = Employee.GetInfoWorkHoursAtDateAddLog(client);                           
                             ServerObject.SendMessage(result, client);
 
                             UserInterface.AskQuitOrContinue(client);
@@ -209,7 +209,7 @@ namespace CRM_Server__TCP_connection_
 
                 case 4: // Необходимы: сотрудник и период                               //GetInfoWorkHoursPerPeriod
                     ServerObject.SendMessage("#Вы выбрали получить информацию про количество отработанных сотрудником часов за период", client);
-                    switch (client.ClientAnswers.Count) // TODO: не работает
+                    switch (client.ClientAnswers.Count)
                     {
                         case 1:
                             UserInterface.PrintListOfEmployees(client);
@@ -254,7 +254,7 @@ namespace CRM_Server__TCP_connection_
                 case 6: // Необходимо: ничего                                           //GetInfoWorkHoursAllTime
                     ServerObject.SendMessage("#Вы выбрали получить информацию про всех сотрудников компании и общее количество отработанных часов", client);
                          
-                    ServerObject.SendMessage(Employee.GetListOfEmployeesAndWorkHours(), client);
+                    ServerObject.SendMessage(Employee.GetListOfEmployeesAndWorkHours(client), client);
 
                     UserInterface.AskQuitOrContinue(client);
                     break;
@@ -340,6 +340,8 @@ namespace CRM_Server__TCP_connection_
                     ServerObject.SendMessage("#Сохранить информацию", client);
                     FileReadAndWriteHandler.ToSaveDataBase();
                     ServerObject.SendMessage("\nИнформация успешно сохранена на сервере", client);
+                    FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} сохранил внесенные изменения.");
+
 
                     UserInterface.AskQuitOrContinue(client);
                     break;
