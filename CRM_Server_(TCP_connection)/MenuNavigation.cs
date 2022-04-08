@@ -11,114 +11,114 @@ namespace CRM_Server__TCP_connection_
         public static void AddClientAnswer(string message, ClientObject client)
         {
 
-            if (client.ExpectedAnswer[0].Equals(typeof(int)))      // Если мы ожидаем от пользователя ввод целого числа
+            if (client.messageType == typeof(int))      // Если мы ожидаем от пользователя ввод целого числа
             {
-                if (int.TryParse(message, out var result) && result >= 0 && result <= (int)client.ExpectedAnswer[1])
+                if (message.IsInt(out var result) && result > 0 && result < 10)
                 {
+                    new Answer(result, client);
 
-                    if (client.ClientAnswers.Count == 0)
-                    {
-                        client.AddAnswer(result);
-                        FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал выбор в Главном Меню: '{GetTitleOfMenuItem(client)}'.");
-                    }
-                    else
-                    {
-                        client.AddAnswer(result);
-                       FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({message}).");
-                    }
-                                                                    
-                    ChooseMenuItem(client);
-                    
-                }
-                else
-                {
-                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо целого числа.");
-                    ServerObject.SendMessage($"Некорректный выбор. Введите целое число", client);
-                }
-            }
-            else if (client.ExpectedAnswer[0].Equals(typeof(double)))      // Если мы ожидаем от пользователя ввод отработанных сотрудником часов
-            {
-                if (double.TryParse(message, out var result) && result >= 0 && result <= 12)
-                {
-                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({message}) часов.");
-                    client.AddAnswer(result);
+                    FileHandler.AddLogClientChoice(client, successful: true);
+
                     ChooseMenuItem(client);
                 }
                 else
                 {
-                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо числа отработанных часов.");
-                    ServerObject.SendMessage($"Некорректный выбор. Введите число отработанных часов", client);
+                    FileHandler.AddLogClientChoice(client, successful: false);
                 }
             }
-            else if (client.ExpectedAnswer[0].Equals(typeof(Employee)))      // Если мы ожидаем от пользователя выбор сотрудника
+           
+            else if (client.messageType == typeof(double))
             {
-                if (int.TryParse(message, out var result) && result >= 0 && Employee.GetAllPossibleIds().Contains(result))
+                if (message.IsDouble(out var result))
                 {
-                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({Employee.GetById(result)}).");
-                    client.AddAnswer(Employee.GetById(result));
+                    new Answer(result, client);
+
+                    FileHandler.AddLogClientChoice(client, successful: true);
+
                     ChooseMenuItem(client);
                 }
                 else
                 {
-                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо порядкового номера сотрудника.");
-                    ServerObject.SendMessage($"Некорректный выбор. Введите порядковый номер сотрудника.", client);
+                    FileHandler.AddLogClientChoice(client, successful: false);
                 }
             }
 
-            else if (client.ExpectedAnswer[0].Equals(typeof(DateTime)))      // Если мы ожидаем от пользователя ввод даты
+            else if (client.messageType == typeof(Employee))
             {
-                if (DateTime.TryParse(message, out var result) && result >= DateTime.Parse("01.01.2010") && result <= DateTime.Now)
+                if (message.IsEmployee(out var result))
                 {
-                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({result:d}).");
-                    client.AddAnswer(result);
+                    new Answer(result, client);
+
+                    FileHandler.AddLogClientChoice(client, successful: true);
+
                     ChooseMenuItem(client);
                 }
                 else
                 {
-                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал некорректный выбор в пункте: '{GetTitleOfMenuItem(client)}', он ввел ({message}) вместо корректной даты.");
-                    ServerObject.SendMessage($"Некорректный выбор. Введите дату с 01.01.2010 по {DateTime.Now:d}", client);
+                    FileHandler.AddLogClientChoice(client, successful: false);
                 }
             }
-            else if (client.ExpectedAnswer[0].Equals(typeof(ConsoleKey)))      // Если мы ожидаем от пользователя ввод Y or N для выхода или продолжения работы
-            {
-                if (string.Equals(message.ToLower(), "y"))          // Продолжить работу с системой
-                {
-                    client.ClientAnswers.Clear();               // Очищаем список ответов
-                    UserInterface.ClearClientConsole(client);
-                    UserInterface.PrintMainMenu(client);        // Выводим главное меню
-                    client.ExpectedAnswer[0] = typeof(int);     // Ожидаем от пользователя выбор пункта главного меню
-                    client.ExpectedAnswer[1] = 10;
-                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} вернулся в основное меню в {DateTime.Now}");
-                }
-                else if (string.Equals(message.ToLower(), "n"))     // Завершить работу с системой
-                {
-                    ServerObject.SendMessage("%", client);      // Требование отключится
-                    client.Close();
-                }
 
-            }
-            else if (client.ExpectedAnswer[0].Equals(typeof(string)))      // Если мы ожидаем от пользователя ввод имени/ фамилии сотрудника / или подтверждение действия
+            else if (client.messageType == typeof(DateTime))
             {
-                if ((int)client.ClientAnswers[0] == 8 && (string.Equals(message.ToLower(), "y") || string.Equals(message.ToLower(), "n")))
+                if (message.IsDateTime(out var result))
                 {
-                    client.AddAnswer(message.ToLower());
+                    new Answer(result, client);
+
+                    FileHandler.AddLogClientChoice(client, successful: true);
+
                     ChooseMenuItem(client);
                 }
-
-                if ((int)client.ClientAnswers[0] == 9 && !string.IsNullOrWhiteSpace(message) && !int.TryParse(message, out var result) && !DateTime.TryParse(message, out var date))
+                else
                 {
-                    if (client.ClientAnswers.Count == 2)    // Сохраняем введенную фамилию нового сотрудника
-                    {
-                        message.Trim();
-                        client.AddAnswer(char.ToUpper(message[0]) + message.Substring(1));
+                    FileHandler.AddLogClientChoice(client, successful: false);
+                }
+            }
+
+            else if (client.messageType == typeof(ConsoleKey))
+            {
+                if (message.IsKey(out var result))
+                {                 
+                    if (client.Answers[0].IntAnswer == 8 && client.Answers.Count == 2)
+                    {   // Только при увольнении сотрудника
+                        new Answer(result, client);
                         ChooseMenuItem(client);
                     }
-                    if (client.ClientAnswers.Count == 1)    // Сохраняем введенное имя нового сотрудника
+                    else if (result.Equals(ConsoleKey.Y))
                     {
-                        message.Trim();                        
-                        client.AddAnswer(char.ToUpper(message[0]) + message.Substring(1));
+                        client.Answers.Clear();
+                        client.messageType = typeof(int);
+                        UserInterface.PrintMainMenu(client);
+                        FileHandler.AddLogSwitchToMainMenu(client);
+                    }
+                    else if (result.Equals(ConsoleKey.N))
+                    {
+                        client.Close();
+                    }
+
+                }
+                else
+                {
+                    FileHandler.AddLogClientChoice(client, successful: false);
+                }
+            }
+            
+            else if (client.messageType == typeof(string) && !string.IsNullOrWhiteSpace(message))
+            {
+                message.Trim();
+                switch (client.Answers.Count)
+                {
+                    case 2:
+                        var lastname = char.ToUpper(message[0]) + message.Substring(1);
+                        new Answer(lastname, client);
                         ChooseMenuItem(client);
-                    }              
+                        break;
+
+                    case 1:
+                        var firstname = char.ToUpper(message[0]) + message.Substring(1);
+                        new Answer(firstname, client);
+                        ChooseMenuItem(client);
+                        break;
                 }
             }
         }
@@ -126,15 +126,15 @@ namespace CRM_Server__TCP_connection_
         public static void ChooseMenuItem(ClientObject client)
         {
 
-            switch ((int)client.ClientAnswers[0])
+            switch (client.Answers[0].IntAnswer)
             {
-                case 1:  // Необходимы: сотрудник, дата                                 //AddFullWorkDay
+                case 1: 
 
-                    ServerObject.SendMessage("#Вы выбрали внести информацию про новый полный рабочий день (8 часов) для сотрудника", client);
-                    switch (client.ClientAnswers.Count)
+                    ServerObject.SendMessage("#Внести информацию про новый полный рабочий день (8 часов) для сотрудника", client);
+                    switch (client.Answers.Count) 
                     {
                         case 1:
-                            UserInterface.PrintListOfEmployees(client);
+                            UserInterface.SendListOfEmployees(client);
                             UserInterface.AskWhichEmployee(client);                                                       
                             break;
 
@@ -153,11 +153,11 @@ namespace CRM_Server__TCP_connection_
                     break;
 
                 case 2: // Необходимы: сотрудник, дата, количество часов                 //AddPartWorkDay
-                    ServerObject.SendMessage("#Вы выбрали внести информацию про новый неполный рабочий день для сотрудника", client);
-                    switch (client.ClientAnswers.Count)
+                    ServerObject.SendMessage("#Внести информацию про новый неполный рабочий день для сотрудника", client);
+                    switch (client.Answers.Count)
                     {
                         case 1:
-                            UserInterface.PrintListOfEmployees(client);
+                            UserInterface.SendListOfEmployees(client);
                             UserInterface.AskWhichEmployee(client);
                             break;
 
@@ -179,11 +179,11 @@ namespace CRM_Server__TCP_connection_
                     break;
 
                 case 3: // Необходимы: сотрудник и дата                                 //GetInfoWorkHoursPerDate
-                    ServerObject.SendMessage("#Вы выбрали получить информацию про количество отработанных сотрудником часов за дату", client);
-                    switch (client.ClientAnswers.Count)
+                    ServerObject.SendMessage("#Получить информацию про количество отработанных сотрудником часов за дату", client);
+                    switch (client.Answers.Count)
                     {
                         case 1:
-                            UserInterface.PrintListOfEmployees(client);
+                            UserInterface.SendListOfEmployees(client);
                             UserInterface.AskWhichEmployee(client);
                             break;
 
@@ -202,11 +202,11 @@ namespace CRM_Server__TCP_connection_
 
 
                 case 4: // Необходимы: сотрудник и период                               //GetInfoWorkHoursPerPeriod
-                    ServerObject.SendMessage("#Вы выбрали получить информацию про количество отработанных сотрудником часов за период", client);
-                    switch (client.ClientAnswers.Count)
+                    ServerObject.SendMessage("#Получить информацию про количество отработанных сотрудником часов за период", client);
+                    switch (client.Answers.Count)
                     {
-                        case 1: // TODO: проверка больше ли вторая дата чем первая
-                            UserInterface.PrintListOfEmployees(client);
+                        case 1:
+                            UserInterface.SendListOfEmployees(client);
                             UserInterface.AskWhichEmployee(client);
                             break;
 
@@ -229,11 +229,11 @@ namespace CRM_Server__TCP_connection_
 
 
                 case 5: // Необходимы: сотрудник                                        //GetInfoWorkHoursAllTime
-                    ServerObject.SendMessage("#Вы выбрали получить информацию про количество отработанных сотрудником часов за все время", client);
-                    switch (client.ClientAnswers.Count)
+                    ServerObject.SendMessage("#Получить информацию про количество отработанных сотрудником часов за все время", client);
+                    switch (client.Answers.Count)
                     {
                         case 1:
-                            UserInterface.PrintListOfEmployees(client);
+                            UserInterface.SendListOfEmployees(client);
                             UserInterface.AskWhichEmployee(client);
                             break;
                         case 2:
@@ -246,7 +246,7 @@ namespace CRM_Server__TCP_connection_
                     break;
 
                 case 6: // Необходимо: ничего                                           //GetInfoWorkHoursAllTime
-                    ServerObject.SendMessage("#Вы выбрали получить информацию про всех сотрудников компании и общее количество отработанных часов", client);
+                    ServerObject.SendMessage("#Получить информацию про всех сотрудников компании и общее количество отработанных часов", client);
                          
                     ServerObject.SendMessage(Employee.GetListOfEmployeesAndWorkHours(client), client);
 
@@ -254,11 +254,11 @@ namespace CRM_Server__TCP_connection_
                     break;
 
                 case 7: // Необходимы: сначала сотрудник и дата, потом сколько часов    //ChangeWorkHoursAtDate
-                    ServerObject.SendMessage("#Вы выбрали отредактировать информацию о количестве отработанных сотрудником часов в определенную дату", client);
-                    switch (client.ClientAnswers.Count)
+                    ServerObject.SendMessage("#Отредактировать информацию о количестве отработанных сотрудником часов в определенную дату", client);
+                    switch (client.Answers.Count)
                     {
                         case 1:
-                            UserInterface.PrintListOfEmployees(client);
+                            UserInterface.SendListOfEmployees(client);
                             UserInterface.AskWhichEmployee(client);
                             break;
 
@@ -284,11 +284,11 @@ namespace CRM_Server__TCP_connection_
                     break;
 
                 case 8: // Необходимы: Сотрудник                                        //ToFireEmployee
-                    ServerObject.SendMessage("#Вы выбрали уволить сотрудника", client);       
-                    switch (client.ClientAnswers.Count)
+                    ServerObject.SendMessage("#Уволить сотрудника", client);       
+                    switch (client.Answers.Count)
                     {
                         case 1:
-                            UserInterface.PrintListOfEmployees(client);
+                            UserInterface.SendListOfEmployees(client);
                             UserInterface.AskWhichEmployee(client);
                             break;
 
@@ -308,17 +308,17 @@ namespace CRM_Server__TCP_connection_
                     break;
 
                 case 9: // Необходимы: Имя, Фамилия                                     //ToHireEmployee
-                    ServerObject.SendMessage("#Вы выбрали нанять сотрудника", client);
-                    switch (client.ClientAnswers.Count)
+                    ServerObject.SendMessage("#Нанять сотрудника", client);
+                    switch (client.Answers.Count)
                     {
                         case 1:
                             ServerObject.SendMessage("\nВведите имя нового сотрудника:", client);
-                            client.ExpectedAnswer[0] = typeof(string);
+                            client.messageType = typeof(string);
                             break;
 
                         case 2:
                             ServerObject.SendMessage("\nВведите фамилию нового сотрудника:", client);
-                            client.ExpectedAnswer[0] = typeof(string);
+                            client.messageType = typeof(string);
                             break;
 
                         case 3:
@@ -332,14 +332,18 @@ namespace CRM_Server__TCP_connection_
             }
         }
 
+     
 
 
         public static string GetTitleOfMenuItem (ClientObject client)
         {
-            switch ((int)client.ClientAnswers[0])
+            if (client.Answers.Count == 1)
             {
-                case 0:
-                    return "Главное меню";
+                return "Главное меню";
+            }
+
+            switch (client.Answers[0].IntAnswer)
+            {
                 case 1:
                     return "Внести информацию про новый полный рабочий день";
                 case 2:

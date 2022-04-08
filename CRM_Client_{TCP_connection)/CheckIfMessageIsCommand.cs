@@ -18,15 +18,10 @@ namespace CRM_Client__TCP_connection_
                     Console.Clear();                    
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
             }
-            else
-            {
-                return false;
-            }     
+       
+            return false;
+                
         }
 
 
@@ -40,15 +35,11 @@ namespace CRM_Client__TCP_connection_
                     Console.ReadLine();
                     return true;
                 }
-                else
-                {
-                    return false;
-                }
+
             }
-            else
-            {
-                return false;
-            }
+         
+            return false;
+            
         }
     }
 

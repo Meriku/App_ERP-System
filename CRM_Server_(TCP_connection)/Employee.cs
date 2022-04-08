@@ -22,8 +22,7 @@ namespace CRM_Server__TCP_connection_
             FirstName = firstname;
             LastName = lastname;
       
-        }
-      
+        }  
 
         public static string GetStringList()       // Возвращаем список сотрудников
         {
@@ -44,7 +43,15 @@ namespace CRM_Server__TCP_connection_
 
         public override string ToString()
         {
-            return $"\nId{Id} \t{FirstName} {LastName}";
+            if (Id < 10)
+            {
+                return $"Id{Id}      {FirstName} {LastName}";
+            }
+            else
+            {
+                return $"Id{Id}     {FirstName} {LastName}";
+            }
+            
         }
 
         public static int[] GetAllPossibleIds()
@@ -71,8 +78,8 @@ namespace CRM_Server__TCP_connection_
 
         public static string AddFullWorkDay(ClientObject client)  // Добавляем новый полный рабочий день                   
         {
-            var emp = (Employee)client.ClientAnswers[1];
-            var workdate = (DateTime)client.ClientAnswers[2];
+            var emp = client.Answers[1].EmployeeAnswer;
+            var workdate = client.Answers[2].DatetimeAnswer;
 
             string result = "";
 
@@ -85,12 +92,12 @@ namespace CRM_Server__TCP_connection_
                     }
 
                     result += $"\nТеперь количество часов отработанных сотрудником {emp.FirstName} {emp.LastName} за {workdate:d} составляет 8 рабочих часов ";
-                    FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} добавил сотруднику {emp.FirstName} {emp.LastName} 8 рабочих часов за {workdate:d} ");
+                    FileHandler.AddLog($"\tПользователь {client.userName} добавил сотруднику {emp.FirstName} {emp.LastName} 8 рабочих часов за {workdate:d} ");
                 }
                 else                                                // Если рабочий день уже существует 
                 {
                     result += $"\nУказано что {emp.FirstName} {emp.LastName} за {workdate:d} отработал {GetInfoWorkHoursAtDate(client)} рабочих часов\nДля внесение изменений в существующие данные воспользуйтесь пунктом 7 'Отредактировать информацию'";
-                    FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} не добавил сотруднику {emp.FirstName} {emp.LastName} новый полный рабочий день, поскольку информация про работу сотрудника в эту дату уже внесена.");
+                    FileHandler.AddLog($"\tПользователь {client.userName} не добавил сотруднику {emp.FirstName} {emp.LastName} новый полный рабочий день, поскольку информация про работу сотрудника в эту дату уже внесена.");
                 }
 
             return result;
@@ -98,9 +105,9 @@ namespace CRM_Server__TCP_connection_
 
         public static string AddPartWorkDay(ClientObject client)    
         {
-            var emp = (Employee)client.ClientAnswers[1]; 
-            var workdate = (DateTime)client.ClientAnswers[2];
-            var hours = (double)client.ClientAnswers[3];
+            var emp = client.Answers[1].EmployeeAnswer;
+            var workdate = client.Answers[2].DatetimeAnswer;
+            var hours = client.Answers[3].DoubleAnswer;
 
             string result = "";
 
@@ -113,12 +120,12 @@ namespace CRM_Server__TCP_connection_
                 }
 
                 result += $"\nТеперь количество часов отработанных сотрудником {emp.FirstName} {emp.LastName} за {workdate:d} составляет {hours} рабочих часов ";
-                FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} добавил сотруднику {emp.FirstName} {emp.LastName} {hours} рабочих часов за {workdate:d} ");
+                FileHandler.AddLog($"\tПользователь {client.userName} добавил сотруднику {emp.FirstName} {emp.LastName} {hours} рабочих часов за {workdate:d} ");
             }
             else                                                // Если рабочий день уже существует 
             {
                 result += $"\nУказано что {emp.FirstName} {emp.LastName} за {workdate:d} отработал {GetInfoWorkHoursAtDate(client)} рабочих часов\nДля внесение изменений в существующие данные воспользуйтесь пунктом 7 'Отредактировать информацию'";
-                FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} не добавил сотруднику {emp.FirstName} {emp.LastName} новый неполный рабочий день, поскольку информация про работу сотрудника в эту дату уже внесена.");
+                FileHandler.AddLog($"\tПользователь {client.userName} не добавил сотруднику {emp.FirstName} {emp.LastName} новый неполный рабочий день, поскольку информация про работу сотрудника в эту дату уже внесена.");
             }
 
             return result;
@@ -126,8 +133,8 @@ namespace CRM_Server__TCP_connection_
 
         public static double GetInfoWorkHoursAtDate(ClientObject client) // Возвращает количество рабочих часов сотрудника в определенную дату
         {
-            var emp = (Employee)client.ClientAnswers[1];
-            var workdate = (DateTime)client.ClientAnswers[2];
+            var emp = client.Answers[1].EmployeeAnswer;
+            var workdate = client.Answers[2].DatetimeAnswer;
 
             using (var context = new MyDbContext())
             {
@@ -143,7 +150,7 @@ namespace CRM_Server__TCP_connection_
                     }
                     catch (Exception ex)
                     {                    
-                        FileReadAndWriteHandler.ToAddLogs($"Ошибка чтения Сервера SQL: Более одной записи о рабочей дате {workdate:d} у сотрудника {emp.Id}: {DateTime.Now} | {ex.Message}");
+                        FileHandler.AddLog($"Ошибка чтения Сервера SQL: Более одной записи о рабочей дате {workdate:d} у сотрудника {emp.Id}: {DateTime.Now} | {ex.Message}");
                     }               
                 }
 
@@ -155,8 +162,8 @@ namespace CRM_Server__TCP_connection_
 
         public static string GetInfoWorkHoursAtDateAsString(ClientObject client) // Возвращает количество рабочих часов сотрудника в определенную дату в формает строки
         {
-            var emp = (Employee)client.ClientAnswers[1];
-            var workdate = (DateTime)client.ClientAnswers[2];
+            var emp = client.Answers[1].EmployeeAnswer;
+            var workdate = client.Answers[2].DatetimeAnswer;
 
             double hours = 0;
 
@@ -172,12 +179,12 @@ namespace CRM_Server__TCP_connection_
                     }
                     catch (Exception ex)
                     {
-                        FileReadAndWriteHandler.ToAddLogs($"Ошибка чтения Сервера SQL: Более одной записи о рабочей дате {workdate:d} у сотрудника {emp.Id}: {DateTime.Now} | {ex.Message}");
+                        FileHandler.AddLog($"Ошибка чтения Сервера SQL: Более одной записи о рабочей дате {workdate:d} у сотрудника {emp.Id}: {DateTime.Now} | {ex.Message}");
                     }
                 }
             }
 
-            FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} запросил информацию про количество отработанных часов {emp.FirstName} {emp.LastName} за {workdate:d}");
+            FileHandler.AddLog($"\tПользователь {client.userName} запросил информацию про количество отработанных часов {emp.FirstName} {emp.LastName} за {workdate:d}");
 
             if (hours == 0)
             {
@@ -192,9 +199,14 @@ namespace CRM_Server__TCP_connection_
 
         public static string GetInfoWorkHoursPerPeriod(ClientObject client)    // Возвращает количество рабочих часов сотрудника за период
         {
-            var emp = (Employee)client.ClientAnswers[1];
-            var firstdate = (DateTime)client.ClientAnswers[2];
-            var seconddate = (DateTime)client.ClientAnswers[3];
+            var emp = client.Answers[1].EmployeeAnswer;
+            var firstdate = client.Answers[2].DatetimeAnswer;
+            var seconddate = client.Answers[3].DatetimeAnswer;
+
+            if (firstdate > seconddate)
+            {
+                (firstdate, seconddate) = (seconddate, firstdate);
+            }
 
             double sum = 0;
 
@@ -210,12 +222,12 @@ namespace CRM_Server__TCP_connection_
                     }
                     catch (Exception ex)
                     {
-                        FileReadAndWriteHandler.ToAddLogs($"Ошибка чтения Сервера SQL при попытке подсчета суммы проработанных часов. {emp.Id}: {DateTime.Now} | {ex.Message}");
+                        FileHandler.AddLog($"Ошибка чтения Сервера SQL при попытке подсчета суммы проработанных часов. {emp.Id}: {DateTime.Now} | {ex.Message}");
                     }
                 }
             }
 
-            FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} запросил информацию про количество отработанных часов {emp.FirstName} {emp.LastName} за период с {firstdate:d} по {seconddate:d}");
+            FileHandler.AddLog($"\tПользователь {client.userName} запросил информацию про количество отработанных часов {emp.FirstName} {emp.LastName} за период с {firstdate:d} по {seconddate:d}");
 
             if (sum == 0)
             {
@@ -229,7 +241,7 @@ namespace CRM_Server__TCP_connection_
 
         public static string GetInfoWorkHoursAllTime(ClientObject client)            // Возвращает количество рабочих часов сотрудника за все время
         {
-            var emp = (Employee)client.ClientAnswers[1];
+            var emp = client.Answers[1].EmployeeAnswer;
             double sum = 0;
 
             using (var context = new MyDbContext())
@@ -244,12 +256,12 @@ namespace CRM_Server__TCP_connection_
                     }
                     catch (Exception ex)
                     {
-                        FileReadAndWriteHandler.ToAddLogs($"Ошибка чтения Сервера SQL при попытке подсчета суммы проработанных часов. {emp.Id}: {DateTime.Now} | {ex.Message}");
+                        FileHandler.AddLog($"Ошибка чтения Сервера SQL при попытке подсчета суммы проработанных часов. {emp.Id}: {DateTime.Now} | {ex.Message}");
                     }
                 }
             }
 
-            FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} запросил информацию про количество отработанных часов {emp.FirstName} {emp.LastName} за весь период");
+            FileHandler.AddLog($"\tПользователь {client.userName} запросил информацию про количество отработанных часов {emp.FirstName} {emp.LastName} за весь период");
 
             if (sum == 0)
             {
@@ -276,20 +288,17 @@ namespace CRM_Server__TCP_connection_
                 {
                     var sum = emp.WorkDays.Select(x => x.WorkHours).Sum();
 
-                    line.Append($"{emp}");
+                    line.Append($"\n{emp}");
 
-                    if (emp.ToString().Length < 22)
-                    {
-                        line.Append($"\t\tотработал {sum} часов.");
-                    }
-                    else
-                    {
-                        line.Append($"\tотработал {sum} часов.");
-                    }
+                    int dif = 35 - ($"\n{emp}").Length;
+                    if (dif > 0) { line.Append(' ', dif);  };
+                    // Что бы все было в одну линию 
+
+                    line.Append($"отработал {sum} часов.");
                 }
             }
 
-            FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} запросил информацию про количество отработанных часов всех сотрудников за все время работы");
+            FileHandler.AddLog($"\tПользователь {client.userName} запросил информацию про количество отработанных часов всех сотрудников за все время работы");
 
             if (line.Length > 0)
             {
@@ -304,9 +313,9 @@ namespace CRM_Server__TCP_connection_
 
         public static string EditInfoAboutWorkDay(ClientObject client)
         {
-            Employee emp = (Employee)client.ClientAnswers[1];
-            DateTime workdate = (DateTime)client.ClientAnswers[2];
-            double hours = (double)client.ClientAnswers[3];
+            var emp = client.Answers[1].EmployeeAnswer;
+            var workdate = client.Answers[2].DatetimeAnswer;
+            var hours = client.Answers[3].DoubleAnswer;
             double oldHours = 0;
 
             using (var context = new MyDbContext())
@@ -322,7 +331,7 @@ namespace CRM_Server__TCP_connection_
                     }
                     catch (Exception ex)
                     {
-                        FileReadAndWriteHandler.ToAddLogs($"Ошибка чтения Сервера SQL при попытке передать новое значение отработанных часов сотрудника. {emp.Id}: {DateTime.Now} | {ex.Message}");
+                        FileHandler.AddLog($"Ошибка чтения Сервера SQL при попытке передать новое значение отработанных часов сотрудника. {emp.Id}: {DateTime.Now} | {ex.Message}");
                     }
                 }
                 else
@@ -333,17 +342,17 @@ namespace CRM_Server__TCP_connection_
                 context.SaveChanges();
             }
 
-            FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} изменил информацию про количество отработанных часов {emp.FirstName} {emp.LastName} за {workdate:d}. Было {oldHours} часов, стало {hours} часов");
+            FileHandler.AddLog($"\tПользователь {client.userName} изменил информацию про количество отработанных часов {emp.FirstName} {emp.LastName} за {workdate:d}. Было {oldHours} часов, стало {hours} часов");
             return $"Информация отредактирована. Зафиксировано что {emp.FirstName} {emp.LastName} за {workdate:d} отработал {hours} рабочих часов";
 
         }
 
         public static string ToFireEmployee(ClientObject client)
         {
-            var emp = (Employee)client.ClientAnswers[1];
-            var IsSure = (string)client.ClientAnswers[2];
+            var emp = client.Answers[1].EmployeeAnswer;
+            var isSure = client.Answers[2].ConsolekeyAnswer;
 
-            if (IsSure.Equals("y"))
+            if (isSure.Equals(ConsoleKey.Y))
             {
                 using (var context = new MyDbContext())
                 {
@@ -352,12 +361,12 @@ namespace CRM_Server__TCP_connection_
                     context.SaveChanges();
                 }
 
-                FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} уволил {emp.FirstName} {emp.LastName}");
+                FileHandler.AddLog($"\tПользователь {client.userName} уволил {emp.FirstName} {emp.LastName}");
                 return $"Сотрудник {emp.FirstName} {emp.LastName} уволен";
             }
-            else if (IsSure.Equals("n"))
+            else if (isSure.Equals(ConsoleKey.N))
             {
-                FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} отменил процедуру увольнения {emp.FirstName} {emp.LastName}");
+                FileHandler.AddLog($"\tПользователь {client.userName} отменил процедуру увольнения {emp.FirstName} {emp.LastName}");
                 return $"Сотрудник {emp.FirstName} {emp.LastName} не уволен. Процедура отменена.";
             }
             return "";
@@ -365,8 +374,8 @@ namespace CRM_Server__TCP_connection_
 
         public static void ToHireEmployee(ClientObject client)
         {
-            var firstname = (string)client.ClientAnswers[1];
-            var lastname = (string)client.ClientAnswers[2];
+            var firstname = client.Answers[1].StringAnswer;
+            var lastname = client.Answers[2].StringAnswer;
 
             using (var context = new MyDbContext())
             {

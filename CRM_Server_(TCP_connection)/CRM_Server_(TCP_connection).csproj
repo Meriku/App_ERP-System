@@ -50,9 +50,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Answer.cs" />
     <Compile Include="ClientObject.cs" />
     <Compile Include="Employee.cs" />
-    <Compile Include="FileReadAndWriteHandler.cs" />
+    <Compile Include="FileHandler.cs" />
+    <Compile Include="Helper.cs" />
     <Compile Include="MenuNavigation.cs" />
     <Compile Include="MyDbContext.cs" />
     <Compile Include="Program.cs" />

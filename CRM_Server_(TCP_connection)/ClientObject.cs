@@ -13,9 +13,10 @@ namespace CRM_Server__TCP_connection_
         public string Id { get; private set; }
         public NetworkStream Stream { get; private set; }
         public string userName;                                     // Имя пользователя 
+    
+        public List<Answer> Answers = new List<Answer>();
+        public Type messageType;
 
-        public List<object> ClientAnswers = new List<object>();     // Список ответов пользователя
-        public object[] ExpectedAnswer = new object[2];             // Ожидаемый ответ пользователя (тип переменной)        
 
         public TcpClient client;
         public ServerObject server;                                 // Объект сервера
@@ -26,31 +27,8 @@ namespace CRM_Server__TCP_connection_
             client = tcpClient;
             server = serverObject;
             serverObject.AddConnection(this);
-            ExpectedAnswer[0] = typeof(int);                        // Ожидаемое полученное от пользователя первое значение - целое число
-            ExpectedAnswer[1] = 9;                                  // Максимальное значение которого - 9
+            messageType = typeof(int);
         }
-
-        public void AddAnswer(int answer)
-        {
-            ClientAnswers.Add(answer);
-        }
-        public void AddAnswer(string answer)
-        {
-            ClientAnswers.Add(answer);
-        }
-        public void AddAnswer(DateTime answer)
-        {
-            ClientAnswers.Add(answer);
-        }
-        public void AddAnswer(Employee answer)
-        {
-            ClientAnswers.Add(answer);
-        }
-        public void AddAnswer(double answer)
-        {         
-            ClientAnswers.Add(Math.Round(answer, 2));
-        }
-
 
         public void Process()
         {
@@ -66,7 +44,7 @@ namespace CRM_Server__TCP_connection_
 
                 UserInterface.PrintMainMenu(this);                                          // Отправляем первое приветствие (меню)
 
-                FileReadAndWriteHandler.ToAddLogs($"{userName} подключился к системе в {DateTime.Now:HH:mm:ss}");
+                FileHandler.AddLog($"{userName} подключился к системе в {DateTime.Now:HH:mm:ss}");
 
                 while (true) // В бесконечном цикле получаем сообщения от клиента
                 {
@@ -79,7 +57,7 @@ namespace CRM_Server__TCP_connection_
                     }
                     catch
                     {
-                        FileReadAndWriteHandler.ToAddLogs($"Пользователь {userName} вышел из системы в {DateTime.Now:HH:mm:ss}");
+                        FileHandler.AddLog($"Пользователь {userName} вышел из системы в {DateTime.Now:HH:mm:ss}");
                         break;
                     }
                 }
@@ -94,7 +72,6 @@ namespace CRM_Server__TCP_connection_
                 Close();
             }
         }
-
 
         public string GetMessage() // Чтение входящего сообщения и преобразование в строку
         {
@@ -119,7 +96,6 @@ namespace CRM_Server__TCP_connection_
             if (client != null)
                 client.Close();
         }
-
 
     }
 }

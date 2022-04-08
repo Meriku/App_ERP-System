@@ -67,7 +67,7 @@ namespace CRM_Server__TCP_connection_
         {
             tcpListener.Stop();                                             //остановка сервера
 
-            FileReadAndWriteHandler.ToAddLogs($"Сервер остановлен: {DateTime.Now}");
+            FileHandler.AddLog($"Сервер остановлен: {DateTime.Now}");
 
             for (int i = 0; i < clients.Count; i++)
             {

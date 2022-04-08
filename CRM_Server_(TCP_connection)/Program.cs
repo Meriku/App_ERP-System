@@ -25,8 +25,7 @@ namespace CRM_Server__TCP_connection_
             // Нанимать / увольнять сотрудников
             // Сохранение и загрузка информации из базы данных (SQL)
 
-
-
+         
             try
             {
                 server = new ServerObject();                // Старт сервера
@@ -36,7 +35,7 @@ namespace CRM_Server__TCP_connection_
             catch (Exception ex)
             {
                 server.Disconnect();
-                FileReadAndWriteHandler.ToAddLogs($"Сервер закрыт с ошибкой: {DateTime.Now} | {ex.Message}");
+                FileHandler.AddLog($"Сервер закрыт с ошибкой: {DateTime.Now} | {ex.Message}");
                 Console.WriteLine(ex.Message);
             }                   
         }
