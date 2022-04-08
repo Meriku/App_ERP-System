@@ -52,10 +52,10 @@ namespace CRM_Server__TCP_connection_
             }
             else if (client.ExpectedAnswer[0].Equals(typeof(Employee)))      // Если мы ожидаем от пользователя выбор сотрудника
             {
-                if (int.TryParse(message, out var result) && result >= 0 && result <= Employee.GetNumberOfEmployees() - 1)
+                if (int.TryParse(message, out var result) && result >= 0 && Employee.GetAllPossibleIds().Contains(result))
                 {
-                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({Employee.GetEmployeeName(Employee.GetEmployeeByIndex(result))}).");
-                    client.AddAnswer(Employee.GetEmployeeByIndex(result));
+                    FileReadAndWriteHandler.ToAddLogs($"{client.userName} сделал в пункте: '{GetTitleOfMenuItem(client)}' выбор: ({Employee.GetById(result)}).");
+                    client.AddAnswer(Employee.GetById(result));
                     ChooseMenuItem(client);
                 }
                 else
@@ -92,8 +92,6 @@ namespace CRM_Server__TCP_connection_
                 }
                 else if (string.Equals(message.ToLower(), "n"))     // Завершить работу с системой
                 {
-
-                    FileReadAndWriteHandler.ToSaveDataBase();   // Сохраняем данные внесенные пользователем
                     ServerObject.SendMessage("%", client);      // Требование отключится
                     client.Close();
                 }
@@ -124,10 +122,6 @@ namespace CRM_Server__TCP_connection_
                 }
             }
         }
-
-
-
-
 
         public static void ChooseMenuItem(ClientObject client)
         {
@@ -198,7 +192,7 @@ namespace CRM_Server__TCP_connection_
                             break; 
                             
                         case 3:                          
-                            string result = Employee.GetInfoWorkHoursAtDateAddLog(client);                           
+                            string result = Employee.GetInfoWorkHoursAtDateAsString(client);                           
                             ServerObject.SendMessage(result, client);
 
                             UserInterface.AskQuitOrContinue(client);
@@ -211,7 +205,7 @@ namespace CRM_Server__TCP_connection_
                     ServerObject.SendMessage("#Вы выбрали получить информацию про количество отработанных сотрудником часов за период", client);
                     switch (client.ClientAnswers.Count)
                     {
-                        case 1:
+                        case 1: // TODO: проверка больше ли вторая дата чем первая
                             UserInterface.PrintListOfEmployees(client);
                             UserInterface.AskWhichEmployee(client);
                             break;
@@ -328,22 +322,12 @@ namespace CRM_Server__TCP_connection_
                             break;
 
                         case 3:
-                            new Employee(client);
+                            Employee.ToHireEmployee(client);
                             UserInterface.PrintInfoAboutNewEmployee(client);
 
                             UserInterface.AskQuitOrContinue(client);
                             break;
                     }
-                    break;
-
-                case 10: //"Сохранить информацию"                                       //ToSaveAndExit
-                    ServerObject.SendMessage("#Сохранить информацию", client);
-                    FileReadAndWriteHandler.ToSaveDataBase();
-                    ServerObject.SendMessage("\nИнформация успешно сохранена на сервере", client);
-                    FileReadAndWriteHandler.ToAddLogs($"\tПользователь {client.userName} сохранил внесенные изменения.");
-
-
-                    UserInterface.AskQuitOrContinue(client);
                     break;
             }
         }
@@ -374,8 +358,6 @@ namespace CRM_Server__TCP_connection_
                     return "Уволить сотрудника";
                 case 9:
                     return "Нанять сотрудника";
-                case 10:
-                    return "Сохранить информацию";
                 default:
                     return "Ошибка. Такого пункта не существует ERR 101";
             }

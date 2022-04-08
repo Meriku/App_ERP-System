@@ -30,9 +30,7 @@ namespace CRM_Server__TCP_connection_
                                                  "\n\t7 - о количестве отработанных сотрудником часов в определенную дату" +
                                                  "\n\n Уволить или нанять сотрудника:" +
                                                  "\n\t8 - уволить сотрудника" +
-                                                 "\n\t9 - нанять сотрудника" +
-                                                 "\n\n Завершить работу:" +
-                                                 "\n\t10 - сохранить информацию про изменения и закрыть программу", client);
+                                                 "\n\t9 - нанять сотрудника", client);
         }
 
 
@@ -40,7 +38,7 @@ namespace CRM_Server__TCP_connection_
         public static void PrintListOfEmployees(ClientObject client)       // Выводим список сотрудников
         {      
         
-            ServerObject.SendMessage("\nСписок сотрудников:" + Employee.GetListOfEmployees(), client);
+            ServerObject.SendMessage("\nСписок сотрудников:" + Employee.GetStringList(), client);
                  
         }
         public static void PrintInfoAboutNewEmployee(ClientObject client)       // Информируем про успешный найм нового сотрудника
@@ -118,7 +116,7 @@ namespace CRM_Server__TCP_connection_
 
         public static void IsUserSureToFireEmployee(ClientObject client)
         {
-            ServerObject.SendMessage($"Вы действительно хотите уволить сотрудника {Employee.GetEmployeeName(client.ClientAnswers[1])} ? Y or N ", client);
+            ServerObject.SendMessage($"Вы действительно хотите уволить сотрудника {client.ClientAnswers[1]} ? Y or N ", client);
             client.ExpectedAnswer[0] = typeof(string);
         }
 

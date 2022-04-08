@@ -13,6 +13,7 @@ namespace CRM_Server__TCP_connection_
         public string Id { get; private set; }
         public NetworkStream Stream { get; private set; }
         public string userName;                                     // Имя пользователя 
+
         public List<object> ClientAnswers = new List<object>();     // Список ответов пользователя
         public object[] ExpectedAnswer = new object[2];             // Ожидаемый ответ пользователя (тип переменной)        
 
@@ -26,7 +27,7 @@ namespace CRM_Server__TCP_connection_
             server = serverObject;
             serverObject.AddConnection(this);
             ExpectedAnswer[0] = typeof(int);                        // Ожидаемое полученное от пользователя первое значение - целое число
-            ExpectedAnswer[1] = 10;                                 // Максимальное значение которого - 10
+            ExpectedAnswer[1] = 9;                                  // Максимальное значение которого - 9
         }
 
         public void AddAnswer(int answer)

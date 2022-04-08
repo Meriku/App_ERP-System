@@ -7,28 +7,25 @@ using System.Threading.Tasks;
 namespace CRM_Server__TCP_connection_
 {
 
-    internal class WorkDay
+    public class WorkDay
     {
-        private double WorkHours;
-        public DateTime WorkDate;
+        public int Id { get; set; }
+        public double WorkHours { get; set; }
+        public DateTime WorkDate { get; set; }
 
-        public WorkDay (DateTime workdate, double workhours)
+        public int EmployeeId { get; set; }
+
+        public virtual Employee Employee { get; set; }
+
+        public WorkDay()
+        {
+        }
+        public WorkDay (DateTime workdate, double workhours, int employeeid)
         {
             WorkHours = workhours; 
             WorkDate = workdate;
+            EmployeeId = employeeid;
         }
-
-        public double WorkHoursAtDay ()
-        {
-            return WorkHours;
-
-        }
-
-        public void EditWorkHoursAtDay(double hours)
-        {
-            WorkHours = hours;
-
-        }
-
+     
     }
 }

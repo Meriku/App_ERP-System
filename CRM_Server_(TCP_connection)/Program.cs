@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -22,11 +23,9 @@ namespace CRM_Server__TCP_connection_
             // Добавлять/уменьшать количество отработанных сотрудником часов в определенную дату;
             // Считать и выводить по запросу отработанные часы за дату, период, все время.
             // Нанимать / увольнять сотрудников
-            // Сохранение и загрузка информации из базы данных (набор информации в простом текстовом файле)
+            // Сохранение и загрузка информации из базы данных (SQL)
 
 
-            FileReadAndWriteHandler.ToLoadDataBase();       // Загрузка базы данных с файла
-            FileReadAndWriteHandler.ToAddLogs($"\nСервер запущен: {DateTime.Now}");
 
             try
             {
